@@ -1,28 +1,8 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
 from typing import Literal, Annotated
-import pickle
-import pandas as pd
-
-# import ml model
-
-with open("model.pkl", "rb") as f:
-    model = pickle.load(f)
-    
-app = FastAPI()
+from config.city_tier import tier_1_cities, tier_2_cities
 
 # pydantic model
-tier_1_cities = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune"]
-tier_2_cities = [
-    "Jaipur", "Chandigarh", "Indore", "Lucknow", "Patna", "Ranchi", "Visakhapatnam", "Coimbatore",
-    "Bhopal", "Nagpur", "Vadodara", "Surat", "Rajkot", "Jodhpur", "Raipur", "Amritsar", "Varanasi",
-    "Agra", "Dehradun", "Mysore", "Jabalpur", "Guwahati", "Thiruvananthapuram", "Ludhiana", "Nashik",
-    "Allahabad", "Udaipur", "Aurangabad", "Hubli", "Belgaum", "Salem", "Vijayawada", "Tiruchirappalli",
-    "Bhavnagar", "Gwalior", "Dhanbad", "Bareilly", "Aligarh", "Gaya", "Kozhikode", "Warangal",
-    "Kolhapur", "Bilaspur", "Jalandhar", "Noida", "Guntur", "Asansol", "Siliguri"
-]
-
 class UserInput(BaseModel):
     
     age: Annotated[int, Field(..., gt=0, lt=120, description="age of user")]
@@ -33,6 +13,12 @@ class UserInput(BaseModel):
     city: Annotated[str, Field(..., description="The city where user belongs to")]
     occupation: Annotated[Literal['retired', 'freelancer', 'student', 'government_job',
        'business_owner', 'unemployed', 'private_job'], Field(..., description="Occupation of the user")]
+    
+    @field_validator("city")
+    @classmethod
+    def normalize_city(cls, v: str) -> str:
+        v = v.strip().title()
+        return v
     
     @computed_field
     @property
@@ -70,18 +56,3 @@ class UserInput(BaseModel):
             return 2
         else:
             return 3
-
-@app.post("/predict")
-def predict_premium(data: UserInput):
-    input_df = pd.DataFrame([{
-        "bmi": data.bmi,
-        "age_group": data.age_group,
-        "lifestyle_risk": data.lifestyle_risk,
-        "city_tier": data.city_tier,
-        "income_lpa": data.income_lpa,
-        "occupation": data.occupation
-        
-    }])
-    
-    prediction = model.predict(input_df)[0]
-    return JSONResponse(status_code=200, content={"predicted_category": prediction})

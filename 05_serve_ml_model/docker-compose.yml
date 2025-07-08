@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  backend:
+    image: ajayk01/insurance-premium-backend
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: fastapi-backend
+    ports:
+      - "8000:8000"
+    networks:
+      - insurance-network
+
+  frontend:
+    image: ajayk01/insurance-premium-frontend
+    build:
+      context: .
+      dockerfile: Frontend/Dockerfile
+    container_name: streamlit-frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    networks:
+      - insurance-network
+
+networks:
+  insurance-network:
+    driver: bridge

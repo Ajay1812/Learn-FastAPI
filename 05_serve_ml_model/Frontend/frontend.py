@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
 
-API_URL = "http://backend:8000/predict"
+# API_URL = "http://backend:8000/predict"
+API_URL = "http://0.0.0.0:8000/predict"
 
 st.title("Insurance Premium Category Predictor")
 st.markdown("Enter your Details below")
@@ -31,7 +32,10 @@ if st.button("Predict Premium Category"):
         response = requests.post(API_URL, json=input_data)
         if response.status_code == 200:
             result = response.json()
-            st.success(f"Predicted Insurance Premium Category: {result['response']}")
+            st.success(f"Predicted Insurance Premium Category: **{result["response"]['predicted_category']}**")
+            st.write("🔍 Confidence:", result["response"]["confidence_score"])
+            st.write("📊 Class Probabilities:")
+            st.json(result["response"]["class_probabilities"])
         else:
             st.error(f"API Error: {response.status_code} - {response.text}")
     except requests.exceptions.ConnectionError:

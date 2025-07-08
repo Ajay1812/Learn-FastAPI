@@ -39,7 +39,7 @@ This project is a full-stack machine learning web app to predict insurance premi
 ### Clone the repository & Run
 
 ```bash
-git clone https://github.com/Ajay1812/insurance-preimum-predictor.git
-cd insurance-preimum-predictor
+git clone https://github.com/Ajay1812/Learn-FastAPI
+cd 05_serve_ml_model
 docker-compose up
 ```
